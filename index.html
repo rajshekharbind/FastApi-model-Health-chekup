@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Premium Predictor</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="form-wrapper">
+            <div class="header">
+                <h1>💼 Insurance Premium Predictor</h1>
+                <p>Get an instant estimate of your insurance premium category</p>
+                <div class="header-buttons">
+                    <button type="button" class="api-btn" onclick="openAPI()">📚 API Docs</button>
+                    <button type="button" class="home-btn" onclick="openHome()">🏠 Home</button>
+                </div>
+            </div>
+
+            <form id="predictionForm" class="prediction-form">
+                <div class="form-section">
+                    <h2>Personal Information</h2>
+                    
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input 
+                            type="number" 
+                            id="age" 
+                            name="age" 
+                            min="1" 
+                            max="119" 
+                            value="30"
+                            required
+                        >
+                        <span class="help-text">Between 1 and 119 years</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="weight">Weight (kg)</label>
+                            <input 
+                                type="number" 
+                                id="weight" 
+                                name="weight" 
+                                min="1" 
+                                step="0.1"
+                                value="65"
+                                required
+                            >
+                            <span class="help-text">Your weight in kilograms</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="height">Height (m)</label>
+                            <input 
+                                type="number" 
+                                id="height" 
+                                name="height" 
+                                min="0.5" 
+                                max="2.5" 
+                                step="0.01"
+                                value="1.7"
+                                required
+                            >
+                            <span class="help-text">Your height in meters</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="smoker">Smoking Status</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="radio" name="smoker" value="false" checked>
+                                <span>Non-smoker</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="radio" name="smoker" value="true">
+                                <span>Smoker</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Financial & Location</h2>
+
+                    <div class="form-group">
+                        <label for="income_lpa">Annual Income (LPA)</label>
+                        <input 
+                            type="number" 
+                            id="income_lpa" 
+                            name="income_lpa" 
+                            min="0.1" 
+                            step="0.1"
+                            value="10"
+                            required
+                        >
+                        <span class="help-text">Annual salary in Lakhs Per Annum (1 LPA = ₹100,000)</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input 
+                            type="text" 
+                            id="city" 
+                            name="city" 
+                            value="Mumbai"
+                            placeholder="Enter your city"
+                            required
+                        >
+                        <span class="help-text">City where you reside</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="occupation">Occupation</label>
+                        <select id="occupation" name="occupation" required>
+                            <option value="">Select your occupation</option>
+                            <option value="private_job">Private Job</option>
+                            <option value="government_job">Government Job</option>
+                            <option value="business_owner">Business Owner</option>
+                            <option value="freelancer">Freelancer</option>
+                            <option value="student">Student</option>
+                            <option value="retired">Retired</option>
+                            <option value="unemployed">Unemployed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span>Predict Premium Category</span>
+                    <span class="loader" id="loader" style="display: none;">⏳</span>
+                </button>
+            </form>
+
+            <div id="resultContainer" class="result-container" style="display: none;">
+                <div class="result-card">
+                    <h2>📊 Prediction Result</h2>
+                    <div class="prediction-result" id="predictionResult"></div>                    <!-- Chart containers -->
+                    <div class="charts-container">
+                        <div class="chart-wrapper">
+                            <h4>Probability Distribution</h4>
+                            <canvas id="probabilityChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper">
+                            <h4>Confidence Level</h4>
+                            <canvas id="confidenceChart"></canvas>
+                        </div>
+                    </div>                    <button type="button" class="reset-btn" onclick="resetForm()">← Try Another Prediction</button>
+                </div>
+            </div>
+
+            <div id="errorContainer" class="error-container" style="display: none;">
+                <div class="error-card">
+                    <h3>⚠️ Error</h3>
+                    <p id="errorMessage"></p>
+                    <button type="button" class="reset-btn" onclick="hideError()">Dismiss</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-sidebar">
+            <div class="info-card">
+                <h3>📋 About BMI</h3>
+                <p>BMI = Weight (kg) / Height² (m²)</p>
+                <ul>
+                    <li><strong>Underweight:</strong> BMI < 18.5</li>
+                    <li><strong>Normal:</strong> 18.5 - 24.9</li>
+                    <li><strong>Overweight:</strong> 25 - 29.9</li>
+                    <li><strong>Obese:</strong> BMI ≥ 30</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <h3>🎯 Risk Categories</h3>
+                <ul>
+                    <li><strong>Low Risk:</strong> Non-smoker, BMI ≤ 27</li>
+                    <li><strong>Medium Risk:</strong> Smoker OR BMI > 27</li>
+                    <li><strong>High Risk:</strong> Smoker AND BMI > 30</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <h3>🏙️ City Tiers</h3>
+                <p><strong>Tier 1:</strong> Major metros (Mumbai, Delhi, etc.)</p>
+                <p><strong>Tier 2:</strong> Larger cities (Jaipur, Chandigarh, etc.)</p>
+                <p><strong>Tier 3:</strong> Other cities</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <!-- Optional: Real-time WebSocket support (uncomment to enable) -->
+   <script src="realtime.js"></script> 
+</body>
+</html>
